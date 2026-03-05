@@ -1,6 +1,6 @@
 import { GenerationForm } from "@/components/GenerationForm";
 import { GenerationHistory } from "@/components/GenerationHistory";
-import { BrainCircuit, Cpu, ArrowRight } from "lucide-react";
+import { BrainCircuit, Cpu, ArrowRight, Terminal } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Home() {
