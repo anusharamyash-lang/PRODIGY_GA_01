@@ -1,7 +1,7 @@
 import { useGenerations } from "@/hooks/use-generations";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, Terminal, ChevronRight, FileText } from "lucide-react";
+import { Clock, Terminal, ChevronRight, FileText, Database } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
