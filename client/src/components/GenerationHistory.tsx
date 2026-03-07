@@ -1,4 +1,6 @@
 import { useGenerations } from "@/hooks/use-generations";
+import { useLanguage } from "@/lib/language-context";
+import { translations } from "@/lib/translations";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Terminal, ChevronRight, FileText, Database } from "lucide-react";
@@ -10,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 
 export function GenerationHistory() {
   const { data: generations, isLoading, error } = useGenerations();
+  const { language } = useLanguage();
+  const t = translations[language];
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   if (isLoading) {
@@ -45,9 +49,9 @@ export function GenerationHistory() {
           <Terminal className="w-8 h-8 text-muted-foreground" />
         </div>
         <div>
-          <h3 className="text-lg font-medium text-zinc-200">No history yet</h3>
+          <h3 className="text-lg font-medium text-zinc-200">{t.noHistory}</h3>
           <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-            Provide training data and a prompt above to start fine-tuning and generating custom text.
+            {t.noHistoryDesc}
           </p>
         </div>
       </Card>
@@ -86,7 +90,7 @@ export function GenerationHistory() {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
                         <Badge variant="outline" className="bg-background/50 text-xs font-normal border-white/10">
-                          ID: #{gen.id}
+                          {t.id}: #{gen.id}
                         </Badge>
                         <div className="flex items-center text-xs text-muted-foreground">
                           <Clock className="w-3 h-3 mr-1" />
@@ -125,7 +129,7 @@ export function GenerationHistory() {
                             <div>
                               <h5 className="text-xs font-semibold text-primary uppercase tracking-wider mb-2 flex items-center gap-2">
                                 <FileText className="w-3 h-3" />
-                                Full Output
+                                {t.fullOutput}
                               </h5>
                               <div className="bg-black/40 rounded-md p-4 border border-white/5">
                                 <p className="text-sm font-mono text-zinc-300 whitespace-pre-wrap leading-relaxed">
@@ -137,7 +141,7 @@ export function GenerationHistory() {
                             <div>
                               <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
                                 <Database className="w-3 h-3" />
-                                Training Data Used
+                                {t.trainingUsed}
                               </h5>
                               <div className="bg-white/[0.02] rounded-md p-3 border border-white/5">
                                 <p className="text-xs font-mono text-muted-foreground whitespace-pre-wrap max-h-32 overflow-y-auto custom-scrollbar">

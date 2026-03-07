@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { Loader2, Sparkles, Database, MessageSquare } from "lucide-react";
 import { insertGenerationSchema, type InsertGeneration } from "@shared/schema";
 import { useCreateGeneration } from "@/hooks/use-generations";
+import { useLanguage } from "@/lib/language-context";
+import { translations } from "@/lib/translations";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -12,6 +14,8 @@ import { Card } from "@/components/ui/card";
 
 export function GenerationForm() {
   const createMutation = useCreateGeneration();
+  const { language } = useLanguage();
+  const t = translations[language];
   const [isFocused, setIsFocused] = useState<"training" | "prompt" | null>(null);
 
   const form = useForm<InsertGeneration>({
@@ -43,15 +47,15 @@ export function GenerationForm() {
             className="text-base font-medium flex items-center gap-2 text-zinc-200"
           >
             <Database className="w-4 h-4 text-primary" />
-            Training Data
+            {t.trainingData}
           </Label>
           <p className="text-sm text-muted-foreground">
-            Provide examples of the text style, tone, or format you want the model to learn from.
+            {t.trainingDataDesc}
           </p>
           <div className="relative">
             <Textarea
               id="trainingData"
-              placeholder="e.g., The quick brown fox jumps over the lazy dog. It was the best of times, it was the worst of times..."
+              placeholder={t.trainingDataPlaceholder}
               className={`
                 min-h-[200px] font-mono text-sm bg-background/50 border-white/10
                 focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50
@@ -76,15 +80,15 @@ export function GenerationForm() {
             className="text-base font-medium flex items-center gap-2 text-zinc-200"
           >
             <MessageSquare className="w-4 h-4 text-primary" />
-            Generation Prompt
+            {t.prompt}
           </Label>
           <p className="text-sm text-muted-foreground">
-            What should the model generate based on your training data?
+            {t.promptDesc}
           </p>
           <div className="relative">
             <Textarea
               id="prompt"
-              placeholder="Start typing your prompt here..."
+              placeholder={t.promptPlaceholder}
               className={`
                 min-h-[100px] bg-background/50 border-white/10
                 focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50
@@ -138,12 +142,12 @@ export function GenerationForm() {
             {createMutation.isPending ? (
               <>
                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Processing
+                {t.processing}
               </>
             ) : (
               <>
                 <Sparkles className="w-5 h-5 mr-2" />
-                Generate
+                {t.generate}
               </>
             )}
           </Button>
