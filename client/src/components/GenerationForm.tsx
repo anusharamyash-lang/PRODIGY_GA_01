@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { Loader2, Sparkles, Database, MessageSquare } from "lucide-react";
+import { Loader2, Sparkles, MessageSquare } from "lucide-react";
 import { insertGenerationSchema, type InsertGeneration } from "@shared/schema";
 import { useCreateGeneration } from "@/hooks/use-generations";
 import { useLanguage } from "@/lib/language-context";
@@ -16,7 +16,7 @@ export function GenerationForm() {
   const createMutation = useCreateGeneration();
   const { language } = useLanguage();
   const t = translations[language];
-  const [isFocused, setIsFocused] = useState<"training" | "prompt" | null>(null);
+  const [isFocused, setIsFocused] = useState<"prompt" | null>(null);
 
   const form = useForm<InsertGeneration>({
     resolver: zodResolver(insertGenerationSchema),
@@ -41,39 +41,6 @@ export function GenerationForm() {
       <div className="absolute -top-32 -right-32 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 group-hover:bg-primary/20" />
       
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 relative z-10">
-        <div className="space-y-3">
-          <Label 
-            htmlFor="trainingData" 
-            className="text-base font-medium flex items-center gap-2 text-zinc-200"
-          >
-            <Database className="w-4 h-4 text-primary" />
-            {t.trainingData}
-          </Label>
-          <p className="text-sm text-muted-foreground">
-            {t.trainingDataDesc}
-          </p>
-          <div className="relative">
-            <Textarea
-              id="trainingData"
-              placeholder={t.trainingDataPlaceholder}
-              className={`
-                min-h-[200px] font-mono text-sm bg-background/50 border-white/10
-                focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50
-                transition-all duration-300 resize-y
-                ${isFocused === 'training' ? 'shadow-[0_0_15px_rgba(59,130,246,0.1)]' : ''}
-              `}
-              {...form.register("trainingData")}
-              onFocus={() => setIsFocused("training")}
-              onBlur={() => setIsFocused(null)}
-            />
-          </div>
-          {form.formState.errors.trainingData && (
-            <p className="text-sm text-destructive mt-1">
-              {form.formState.errors.trainingData.message}
-            </p>
-          )}
-        </div>
-
         <div className="space-y-3">
           <Label 
             htmlFor="prompt" 

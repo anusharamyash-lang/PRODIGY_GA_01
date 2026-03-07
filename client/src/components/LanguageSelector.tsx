@@ -3,7 +3,7 @@ import { languageNames, type Language } from "@/lib/translations";
 import { Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const languages: Language[] = ["en", "es", "fr", "de", "zh"];
+const languages: Language[] = ["en", "hi", "ta", "te", "kn"];
 
 export function LanguageSelector() {
   const { language, setLanguage } = useLanguage();
