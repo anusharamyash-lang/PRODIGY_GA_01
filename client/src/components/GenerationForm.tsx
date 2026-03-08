@@ -59,7 +59,10 @@ export function GenerationForm() {
             <Textarea
               id="prompt"
               placeholder={t.promptPlaceholder}
-              lang={language === "en" ? "en" : language}
+              lang={language}
+              inputMode="text"
+              autoCapitalize="sentences"
+              spellCheck={language === "en" ? "true" : "false"}
               className={`
                 min-h-[100px] bg-background/50 border-white/10
                 focus-visible:ring-1 focus-visible:ring-purple-500/50 focus-visible:border-purple-500/50
@@ -79,6 +82,11 @@ export function GenerationForm() {
             <div className="absolute bottom-3 right-3 text-xs text-muted-foreground/50 pointer-events-none">
               Cmd/Ctrl + Enter to generate
             </div>
+            {language !== "en" && (
+              <div className="mt-2 text-xs text-purple-300/70">
+                💡 Tip: Switch your device keyboard to {language === "hi" ? "हिंदी (Hindi)" : language === "ta" ? "தமிழ் (Tamil)" : language === "te" ? "తెలుగు (Telugu)" : "ಕನ್ನಡ (Kannada)"} for better typing experience
+              </div>
+            )}
           </div>
           {form.formState.errors.prompt && (
             <p className="text-sm text-destructive mt-1">
