@@ -7,12 +7,14 @@ export const generations = pgTable("generations", {
   trainingData: text("training_data").notNull(),
   prompt: text("prompt").notNull(),
   result: text("result").notNull(),
+  language: text("language").notNull().default("en"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertGenerationSchema = createInsertSchema(generations).pick({
   trainingData: true,
   prompt: true,
+  language: true,
 });
 
 export type InsertGeneration = z.infer<typeof insertGenerationSchema>;

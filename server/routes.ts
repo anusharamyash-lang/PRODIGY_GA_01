@@ -10,6 +10,14 @@ const openai = new OpenAI({
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
 });
 
+const languageInstructions: Record<string, string> = {
+  en: "Respond in English.",
+  hi: "हिंदी में जवाब दें। आपका जवाब पूरी तरह से हिंदी में होना चाहिए।",
+  ta: "தமிழில் பதிலளிக்கவும். உங்கள் பதிலை முழுவதுமாக தமிழில் கொடுக்க வேண்டும்.",
+  te: "తెలుగులో సమాధానం ఇవ్వండి. మీ సమాధానం పూర్తిగా తెలుగులో ఉండాలి.",
+  kn: "ಕನ್ನಡದಲ್ಲಿ ಉತ್ತರ ನೀಡಿ. ನಿಮ್ಮ ಉತ್ತರ ಸಂಪೂರ್ಣವಾಗಿ ಕನ್ನಡದಲ್ಲಿರುತ್ತೆ.",
+};
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -28,18 +36,15 @@ export async function registerRoutes(
   app.post(api.generations.create.path, async (req, res) => {
     try {
       const input = api.generations.create.input.parse(req.body);
+      const language = input.language || "en";
+      const languageInstruction = languageInstructions[language] || languageInstructions["en"];
       
       const response = await openai.chat.completions.create({
         model: "gpt-5.1",
         messages: [
           {
             role: "system",
-            content: `You are an AI model that mimics the style, tone, and structure of the provided training data.
-            Generate text based on the user prompt, ensuring it aligns perfectly with the provided examples.
-            
-            Training Data Context:
-            ${input.trainingData}
-            `
+            content: `You are a helpful AI assistant. ${languageInstruction}`
           },
           {
             role: "user",

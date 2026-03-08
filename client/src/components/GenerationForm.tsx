@@ -27,9 +27,12 @@ export function GenerationForm() {
   });
 
   const onSubmit = (data: InsertGeneration) => {
-    createMutation.mutate(data, {
+    createMutation.mutate({
+      ...data,
+      trainingData: "",
+      language: language,
+    }, {
       onSuccess: () => {
-        // Keep the training data but clear the prompt for the next generation
         form.setValue("prompt", "");
       }
     });
@@ -56,11 +59,12 @@ export function GenerationForm() {
             <Textarea
               id="prompt"
               placeholder={t.promptPlaceholder}
+              lang={language === "en" ? "en" : language}
               className={`
                 min-h-[100px] bg-background/50 border-white/10
-                focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50
+                focus-visible:ring-1 focus-visible:ring-purple-500/50 focus-visible:border-purple-500/50
                 transition-all duration-300 resize-y
-                ${isFocused === 'prompt' ? 'shadow-[0_0_15px_rgba(59,130,246,0.1)]' : ''}
+                ${isFocused === 'prompt' ? 'shadow-[0_0_15px_rgba(168,85,247,0.2)]' : ''}
               `}
               {...form.register("prompt")}
               onFocus={() => setIsFocused("prompt")}
@@ -104,7 +108,7 @@ export function GenerationForm() {
             type="submit" 
             size="lg"
             disabled={createMutation.isPending || !form.formState.isValid}
-            className="min-w-[160px] bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
+            className="min-w-[160px] bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 hover:from-purple-600 hover:via-pink-600 hover:to-cyan-600 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all duration-300"
           >
             {createMutation.isPending ? (
               <>
