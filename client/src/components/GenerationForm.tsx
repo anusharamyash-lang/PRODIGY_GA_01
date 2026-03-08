@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
@@ -11,12 +11,15 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { LanguageKeyboard } from "./LanguageKeyboard";
+import type { Language } from "@/lib/translations";
 
 export function GenerationForm() {
   const createMutation = useCreateGeneration();
   const { language } = useLanguage();
   const t = translations[language];
   const [isFocused, setIsFocused] = useState<"prompt" | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const form = useForm<InsertGeneration>({
     resolver: zodResolver(insertGenerationSchema),
@@ -38,6 +41,21 @@ export function GenerationForm() {
     });
   };
 
+  const handleCharSelect = (char: string) => {
+    if (textareaRef.current) {
+      const start = textareaRef.current.selectionStart;
+      const end = textareaRef.current.selectionEnd;
+      const text = form.getValues("prompt");
+      const newText = text.substring(0, start) + char + text.substring(end);
+      form.setValue("prompt", newText);
+      
+      setTimeout(() => {
+        textareaRef.current?.setSelectionRange(start + char.length, start + char.length);
+        textareaRef.current?.focus();
+      }, 0);
+    }
+  };
+
   return (
     <Card className="p-6 md:p-8 bg-card/50 backdrop-blur-sm border-white/5 shadow-2xl relative overflow-hidden group">
       {/* Decorative background glow */}
@@ -57,6 +75,7 @@ export function GenerationForm() {
           </p>
           <div className="relative">
             <Textarea
+              ref={textareaRef}
               id="prompt"
               placeholder={t.promptPlaceholder}
               lang={language}
@@ -65,9 +84,9 @@ export function GenerationForm() {
               spellCheck={language === "en" ? "true" : "false"}
               className={`
                 min-h-[100px] bg-background/50 border-white/10
-                focus-visible:ring-1 focus-visible:ring-purple-500/50 focus-visible:border-purple-500/50
+                focus-visible:ring-1 focus-visible:ring-cyan-500/50 focus-visible:border-cyan-500/50
                 transition-all duration-300 resize-y
-                ${isFocused === 'prompt' ? 'shadow-[0_0_15px_rgba(168,85,247,0.2)]' : ''}
+                ${isFocused === 'prompt' ? 'shadow-[0_0_15px_rgba(34,211,238,0.2)]' : ''}
               `}
               {...form.register("prompt")}
               onFocus={() => setIsFocused("prompt")}
@@ -83,11 +102,18 @@ export function GenerationForm() {
               Cmd/Ctrl + Enter to generate
             </div>
             {language !== "en" && (
-              <div className="mt-2 text-xs text-purple-300/70">
-                💡 Tip: Switch your device keyboard to {language === "hi" ? "हिंदी (Hindi)" : language === "ta" ? "தமிழ் (Tamil)" : language === "te" ? "తెలుగు (Telugu)" : "ಕನ್ನಡ (Kannada)"} for better typing experience
+              <div className="mt-2 text-xs text-cyan-300/70">
+                💡 Use the keyboard below or switch your device keyboard to {language === "hi" ? "हिंदी (Hindi)" : language === "ta" ? "தமிழ் (Tamil)" : language === "te" ? "తెలుగు (Telugu)" : "ಕನ್ನಡ (Kannada)"}
               </div>
             )}
           </div>
+
+          {language !== "en" && (
+            <LanguageKeyboard 
+              language={language as "hi" | "ta" | "te" | "kn"} 
+              onCharSelect={handleCharSelect}
+            />
+          )}
           {form.formState.errors.prompt && (
             <p className="text-sm text-destructive mt-1">
               {form.formState.errors.prompt.message}
@@ -116,7 +142,7 @@ export function GenerationForm() {
             type="submit" 
             size="lg"
             disabled={createMutation.isPending || !form.formState.isValid}
-            className="min-w-[160px] bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 hover:from-purple-600 hover:via-pink-600 hover:to-cyan-600 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all duration-300"
+            className="min-w-[160px] bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-400 hover:from-blue-600 hover:via-cyan-600 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-all duration-300"
           >
             {createMutation.isPending ? (
               <>

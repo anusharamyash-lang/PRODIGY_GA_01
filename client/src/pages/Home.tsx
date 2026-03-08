@@ -40,7 +40,7 @@ export default function Home() {
             <motion.div
               animate={{ rotate: 360, scale: [1, 1.05, 1] }}
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              className="w-20 h-20 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-cyan-500 flex items-center justify-center shadow-2xl shadow-purple-500/50"
+              className="w-20 h-20 rounded-lg bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-400 flex items-center justify-center shadow-2xl shadow-cyan-500/50"
             >
               <Bot className="w-10 h-10 text-white" />
             </motion.div>
@@ -73,10 +73,10 @@ export default function Home() {
             transition={{ duration: 0.5 }}
           >
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 via-pink-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-400 flex items-center justify-center shadow-lg shadow-cyan-500/30">
                 <Bot className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent tracking-tight">{t.title}</h1>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-300 bg-clip-text text-transparent tracking-tight">{t.title}</h1>
             </div>
             <p className="text-muted-foreground text-lg">{t.subtitle}</p>
           </motion.div>
