@@ -42,18 +42,28 @@ export function GenerationForm() {
   };
 
   const handleCharSelect = (char: string) => {
-    if (textareaRef.current) {
-      const start = textareaRef.current.selectionStart;
-      const end = textareaRef.current.selectionEnd;
-      const text = form.getValues("prompt");
-      const newText = text.substring(0, start) + char + text.substring(end);
-      form.setValue("prompt", newText);
+    const currentValue = form.getValues("prompt");
+    const textarea = textareaRef.current;
+    
+    if (textarea) {
+      const start = textarea.selectionStart || 0;
+      const end = textarea.selectionEnd || 0;
+      const newText = currentValue.substring(0, start) + char + currentValue.substring(end);
+      
+      form.setValue("prompt", newText, { shouldValidate: true });
       
       setTimeout(() => {
-        textareaRef.current?.setSelectionRange(start + char.length, start + char.length);
-        textareaRef.current?.focus();
+        if (textarea) {
+          textarea.focus();
+          const newPosition = start + char.length;
+          textarea.setSelectionRange(newPosition, newPosition);
+        }
       }, 0);
     }
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    form.setValue("prompt", e.target.value, { shouldValidate: true });
   };
 
   return (
@@ -77,18 +87,21 @@ export function GenerationForm() {
             <Textarea
               ref={textareaRef}
               id="prompt"
-              placeholder={t.promptPlaceholder}
+              placeholder={language !== "en" ? `Use the keyboard below to type in ${language === "hi" ? "हिंदी" : language === "ta" ? "தமிழ்" : language === "te" ? "తెలుగు" : "ಕನ್ನಡ"}` : t.promptPlaceholder}
               lang={language}
-              inputMode="text"
+              inputMode={language === "en" ? "text" : "none"}
               autoCapitalize="sentences"
               spellCheck={language === "en" ? "true" : "false"}
+              readOnly={language !== "en"}
               className={`
                 min-h-[100px] bg-background/50 border-white/10
                 focus-visible:ring-1 focus-visible:ring-cyan-500/50 focus-visible:border-cyan-500/50
                 transition-all duration-300 resize-y
+                ${language !== "en" ? 'cursor-pointer' : 'cursor-text'}
                 ${isFocused === 'prompt' ? 'shadow-[0_0_15px_rgba(34,211,238,0.2)]' : ''}
               `}
-              {...form.register("prompt")}
+              value={form.watch("prompt")}
+              onChange={language === "en" ? handleTextChange : undefined}
               onFocus={() => setIsFocused("prompt")}
               onBlur={() => setIsFocused(null)}
               onKeyDown={(e) => {
@@ -102,8 +115,9 @@ export function GenerationForm() {
               Cmd/Ctrl + Enter to generate
             </div>
             {language !== "en" && (
-              <div className="mt-2 text-xs text-cyan-300/70">
-                💡 Use the keyboard below or switch your device keyboard to {language === "hi" ? "हिंदी (Hindi)" : language === "ta" ? "தமிழ் (Tamil)" : language === "te" ? "తెలుగు (Telugu)" : "ಕನ್ನಡ (Kannada)"}
+              <div className="mt-2 text-xs text-cyan-300/70 flex items-center gap-1">
+                <span className="inline-flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                💡 Use the digital keyboard below to type in {language === "hi" ? "हिंदी" : language === "ta" ? "தமிழ்" : language === "te" ? "తెలుగు" : "ಕನ್ನಡ"}
               </div>
             )}
           </div>
