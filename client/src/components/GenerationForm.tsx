@@ -1,132 +1,184 @@
-import { GenerationForm } from "@/components/GenerationForm";
-import { LanguageSelector } from "@/components/LanguageSelector";
-import { AnswerChatbox } from "@/components/AnswerChatbox";
-import { HistoryDashboard } from "@/components/HistoryDashboard";
+import { useState, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
+import { Loader2, Sparkles, MessageSquare } from "lucide-react";
+import { insertGenerationSchema, type InsertGeneration } from "@shared/schema";
+import { useCreateGeneration } from "@/hooks/use-generations";
 import { useLanguage } from "@/lib/language-context";
 import { translations } from "@/lib/translations";
-import { Bot } from "lucide-react";
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
-import { type Generation } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { LanguageKeyboard } from "./LanguageKeyboard";
+import type { Language } from "@/lib/translations";
 
-export default function Home() {
+interface GenerationFormProps {
+  onGenerationStart?: () => void;
+  onGenerationComplete?: (generation: any) => void;
+}
+
+export function GenerationForm({ onGenerationStart, onGenerationComplete }: GenerationFormProps) {
+  const createMutation = useCreateGeneration();
   const { language } = useLanguage();
   const t = translations[language];
-  const [showSplash, setShowSplash] = useState(true);
-  const [currentGeneration, setCurrentGeneration] = useState<Generation | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isFocused, setIsFocused] = useState<"prompt" | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
+  const form = useForm<InsertGeneration>({
+    resolver: zodResolver(insertGenerationSchema),
+    defaultValues: {
+      trainingData: "",
+      prompt: "",
+    },
+  });
+
+  const onSubmit = (data: InsertGeneration) => {
+    onGenerationStart?.();
+    createMutation.mutate({
+      ...data,
+      trainingData: "",
+      language: language,
+    }, {
+      onSuccess: (generation) => {
+        onGenerationComplete?.(generation);
+      }
+    });
+  };
+
+  const handleCharSelect = (char: string) => {
+    const currentValue = form.getValues("prompt");
+    const textarea = textareaRef.current;
+    
+    if (textarea) {
+      const start = textarea.selectionStart || 0;
+      const end = textarea.selectionEnd || 0;
+      const newText = currentValue.substring(0, start) + char + currentValue.substring(end);
+      
+      form.setValue("prompt", newText, { shouldValidate: true });
+      
+      setTimeout(() => {
+        if (textarea) {
+          textarea.focus();
+          const newPosition = start + char.length;
+          textarea.setSelectionRange(newPosition, newPosition);
+        }
+      }, 0);
+    }
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    form.setValue("prompt", e.target.value, { shouldValidate: true });
+  };
 
   return (
-    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="fixed inset-0 z-0 pointer-events-none animated-gradient-bg opacity-30" />
-      <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/10 via-background/80 to-background z-0 pointer-events-none" />
-
-      {/* AI Splash Screen */}
-      {showSplash && (
-        <motion.div
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5, delay: 1.5 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background"
-        >
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            className="flex flex-col items-center gap-4"
+    <Card className="p-6 md:p-8 bg-card/50 backdrop-blur-sm border-white/5 shadow-2xl relative overflow-hidden group">
+      {/* Decorative background glow */}
+      <div className="absolute -top-32 -right-32 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 group-hover:bg-primary/20" />
+      
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 relative z-10">
+        <div className="space-y-3">
+          <Label 
+            htmlFor="prompt" 
+            className="text-base font-medium flex items-center gap-2 text-zinc-200"
           >
-            <motion.div
-              animate={{ rotate: 360, scale: [1, 1.05, 1] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-              className="w-20 h-20 rounded-lg bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-400 flex items-center justify-center shadow-2xl shadow-cyan-500/50"
-            >
-              <Bot className="w-10 h-10 text-white" />
-            </motion.div>
-            <motion.h2
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="text-2xl font-bold text-white tracking-tight"
-            >
-              GPT-2
-            </motion.h2>
-          </motion.div>
-        </motion.div>
-      )}
-
-      <div className="relative z-10">
-        {/* Header with Language Selector and History Dashboard */}
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center justify-between mb-12"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-400 flex items-center justify-center shadow-lg shadow-cyan-500/30">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-300 bg-clip-text text-transparent tracking-tight">
-                {t.title}
-              </h1>
+            <MessageSquare className="w-4 h-4 text-primary" />
+            {t.prompt}
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            {t.promptDesc}
+          </p>
+          <div className="relative">
+            <Textarea
+              ref={textareaRef}
+              id="prompt"
+              placeholder={language !== "en" ? `Use the keyboard below to type in ${language === "hi" ? "हिंदी" : language === "ta" ? "தமிழ்" : language === "te" ? "తెలుగు" : "ಕನ್ನಡ"}` : t.promptPlaceholder}
+              lang={language}
+              inputMode={language === "en" ? "text" : "none"}
+              autoCapitalize="sentences"
+              spellCheck={language === "en" ? "true" : "false"}
+              readOnly={language !== "en"}
+              className={`
+                min-h-[100px] bg-background/50 border-white/10
+                focus-visible:ring-1 focus-visible:ring-cyan-500/50 focus-visible:border-cyan-500/50
+                transition-all duration-300 resize-y
+                ${language !== "en" ? 'cursor-pointer' : 'cursor-text'}
+                ${isFocused === 'prompt' ? 'shadow-[0_0_15px_rgba(34,211,238,0.2)]' : ''}
+              `}
+              value={form.watch("prompt")}
+              onChange={language === "en" ? handleTextChange : undefined}
+              onFocus={() => setIsFocused("prompt")}
+              onBlur={() => setIsFocused(null)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                  e.preventDefault();
+                  form.handleSubmit(onSubmit)();
+                }
+              }}
+            />
+            <div className="absolute bottom-3 right-3 text-xs text-muted-foreground/50 pointer-events-none">
+              Cmd/Ctrl + Enter to generate
             </div>
-
-            <div className="flex items-center gap-4">
-              <LanguageSelector />
-              <div className="text-sm text-muted-foreground">History</div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Main Content Area */}
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Left: Form and Answer */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="lg:col-span-3"
-            >
-              <GenerationForm
-                onGenerationStart={() => setIsGenerating(true)}
-                onGenerationComplete={(generation) => {
-                  setCurrentGeneration(generation);
-                  setIsGenerating(false);
-                }}
-              />
-
-              {/* Answer Chatbox */}
-              <AnswerChatbox generation={currentGeneration} isLoading={isGenerating} />
-            </motion.div>
-
-            {/* Right: History Sidebar */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="lg:col-span-1"
-            >
-              <div className="sticky top-8">
-                <h2 className="text-lg font-semibold text-cyan-400 mb-4 flex items-center gap-2">
-                  📋 {t.genHistory || "History"}
-                </h2>
-                <HistoryDashboard
-                  onSelectGeneration={setCurrentGeneration}
-                  selectedId={currentGeneration?.id}
-                />
+            {language !== "en" && (
+              <div className="mt-2 text-xs text-cyan-300/70 flex items-center gap-1">
+                <span className="inline-flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                💡 Use the digital keyboard below to type in {language === "hi" ? "हिंदी" : language === "ta" ? "தமிழ்" : language === "te" ? "తెలుగు" : "ಕನ್ನಡ"}
               </div>
-            </motion.div>
+            )}
           </div>
+
+          {language !== "en" && (
+            <LanguageKeyboard 
+              language={language as "hi" | "ta" | "te" | "kn"} 
+              onCharSelect={handleCharSelect}
+            />
+          )}
+          {form.formState.errors.prompt && (
+            <p className="text-sm text-destructive mt-1">
+              {form.formState.errors.prompt.message}
+            </p>
+          )}
         </div>
-      </div>
-    </div>
+
+        <div className="pt-4 flex items-center justify-between">
+          <div className="text-sm text-muted-foreground flex items-center gap-2">
+            {createMutation.isPending && (
+              <motion.span 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }}
+                className="flex items-center gap-2 text-primary"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                </span>
+                {t.processing}
+              </motion.span>
+            )}
+          </div>
+          
+          <Button 
+            type="submit" 
+            size="lg"
+            disabled={createMutation.isPending || !form.formState.isValid}
+            className="min-w-[160px] bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-400 hover:from-blue-600 hover:via-cyan-600 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-all duration-300"
+            data-testid="button-generate"
+          >
+            {createMutation.isPending ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                {t.processing}
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-5 h-5 mr-2" />
+                {t.generate}
+              </>
+            )}
+          </Button>
+        </div>
+      </form>
+    </Card>
   );
 }
