@@ -1,16 +1,20 @@
 import { GenerationForm } from "@/components/GenerationForm";
-import { GenerationHistory } from "@/components/GenerationHistory";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { AnswerChatbox } from "@/components/AnswerChatbox";
+import { HistoryDashboard } from "@/components/HistoryDashboard";
 import { useLanguage } from "@/lib/language-context";
 import { translations } from "@/lib/translations";
 import { Bot } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import { type Generation } from "@shared/schema";
 
 export default function Home() {
   const { language } = useLanguage();
   const t = translations[language];
   const [showSplash, setShowSplash] = useState(true);
+  const [currentGeneration, setCurrentGeneration] = useState<Generation | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 2000);
@@ -52,65 +56,76 @@ export default function Home() {
             >
               GPT-2
             </motion.h2>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="text-muted-foreground"
-            >
-              AI-Powered Text Generation
-            </motion.p>
           </motion.div>
         </motion.div>
       )}
 
-      <div className="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+      <div className="relative z-10">
         {/* Header with Language Selector */}
-        <div className="flex items-center justify-between mb-12">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            className="flex items-center justify-between mb-12"
           >
-            <div className="flex items-center gap-3 mb-3">
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-400 flex items-center justify-center shadow-lg shadow-cyan-500/30">
                 <Bot className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-300 bg-clip-text text-transparent tracking-tight">{t.title}</h1>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-300 bg-clip-text text-transparent tracking-tight">
+                {t.title}
+              </h1>
             </div>
-            <p className="text-muted-foreground text-lg">{t.subtitle}</p>
-          </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <LanguageSelector />
+            <div className="flex items-center gap-6">
+              <LanguageSelector />
+              <div className="text-sm text-cyan-400 font-semibold">📋 History</div>
+            </div>
           </motion.div>
         </div>
 
-        {/* Form Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-8"
-        >
-          <GenerationForm />
-        </motion.div>
+        {/* Main Content Area */}
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Left: Form and Answer */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="lg:col-span-3"
+            >
+              <GenerationForm
+                onGenerationStart={() => setIsGenerating(true)}
+                onGenerationComplete={(generation) => {
+                  setCurrentGeneration(generation);
+                  setIsGenerating(false);
+                }}
+              />
 
-        {/* History Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <div className="bg-background/20 backdrop-blur-xl border border-white/5 rounded-2xl p-6 shadow-2xl">
-            <h2 className="text-xl font-semibold text-zinc-200 mb-4">{t.genHistory}</h2>
-            <GenerationHistory />
+              {/* Answer Chatbox */}
+              <AnswerChatbox generation={currentGeneration} isLoading={isGenerating} />
+            </motion.div>
+
+            {/* Right: History Sidebar */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="lg:col-span-1"
+            >
+              <div className="sticky top-8">
+                <h2 className="text-lg font-semibold text-cyan-400 mb-4">
+                  Recent ({translations[language].genHistory || "History"})
+                </h2>
+                <HistoryDashboard
+                  onSelectGeneration={setCurrentGeneration}
+                  selectedId={currentGeneration?.id}
+                />
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
