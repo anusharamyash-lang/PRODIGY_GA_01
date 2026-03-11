@@ -2,6 +2,7 @@ import { GenerationForm } from "@/components/GenerationForm";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { AnswerChatbox } from "@/components/AnswerChatbox";
 import { HistoryDashboard } from "@/components/HistoryDashboard";
+import { FallingDots } from "@/components/FallingDots";
 import { useLanguage } from "@/lib/language-context";
 import { translations } from "@/lib/translations";
 import { Bot } from "lucide-react";
@@ -61,28 +62,37 @@ export default function Home() {
       )}
 
       <div className="relative z-10">
-        {/* Header with Language Selector */}
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center justify-between mb-12"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-400 flex items-center justify-center shadow-lg shadow-cyan-500/30">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-300 bg-clip-text text-transparent tracking-tight">
-                {t.title}
-              </h1>
-            </div>
+        {/* Header with falling dots background */}
+        <div className="relative overflow-hidden border-b border-cyan-500/10" style={{ background: "linear-gradient(135deg, rgba(3,7,18,0.97) 0%, rgba(8,16,40,0.97) 50%, rgba(3,12,32,0.97) 100%)" }}>
+          {/* Falling dots canvas */}
+          <FallingDots />
 
-            <div className="flex items-center gap-6">
-              <LanguageSelector />
-              <div className="text-sm text-cyan-400 font-semibold">📋 History</div>
-            </div>
-          </motion.div>
+          {/* Subtle gradient overlay for depth */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-950/40 via-transparent to-cyan-950/40 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
+
+          <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-400 flex items-center justify-center shadow-lg shadow-cyan-500/40 ring-1 ring-cyan-400/30">
+                  <Bot className="w-5 h-5 text-white" />
+                </div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-300 bg-clip-text text-transparent tracking-tight drop-shadow-[0_0_20px_rgba(34,211,238,0.4)]">
+                  {t.title}
+                </h1>
+              </div>
+
+              <div className="flex items-center gap-6">
+                <LanguageSelector />
+                <div className="text-sm text-cyan-400 font-semibold">📋 History</div>
+              </div>
+            </motion.div>
+          </div>
         </div>
 
         {/* Main Content Area */}
