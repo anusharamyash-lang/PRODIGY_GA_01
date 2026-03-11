@@ -63,13 +63,11 @@ export default function Home() {
 
       <div className="relative z-10">
         {/* Header with falling dots background */}
-        <div className="relative overflow-hidden border-b border-cyan-500/10" style={{ background: "linear-gradient(135deg, rgba(3,7,18,0.97) 0%, rgba(8,16,40,0.97) 50%, rgba(3,12,32,0.97) 100%)" }}>
+        <div className="relative overflow-hidden border-b border-white/5" style={{ background: "#000000" }}>
           {/* Falling dots canvas */}
           <FallingDots />
 
-          {/* Subtle gradient overlay for depth */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-950/40 via-transparent to-cyan-950/40 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
 
           <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
             <motion.div

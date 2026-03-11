@@ -6,20 +6,17 @@ interface Dot {
   size: number;
   speed: number;
   opacity: number;
-  opacitySpeed: number;
   color: string;
-  shimmer: number;
-  shimmerSpeed: number;
+  twinkle: number;
+  twinkleSpeed: number;
 }
 
 const COLORS = [
-  "0, 200, 255",   // cyan
-  "56, 189, 248",  // sky blue
-  "96, 165, 250",  // blue
-  "147, 197, 253", // light blue
-  "255, 255, 255", // white
-  "186, 230, 253", // pale cyan
-  "34, 211, 238",  // bright cyan
+  "0, 220, 255",
+  "100, 200, 255",
+  "180, 230, 255",
+  "255, 255, 255",
+  "50, 180, 255",
 ];
 
 export function FallingDots() {
@@ -30,7 +27,6 @@ export function FallingDots() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -38,61 +34,39 @@ export function FallingDots() {
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
     };
-
     resize();
     window.addEventListener("resize", resize);
 
-    const createDot = (): Dot => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      size: Math.random() * 2.5 + 0.5,
-      speed: Math.random() * 0.8 + 0.2,
-      opacity: Math.random() * 0.8 + 0.1,
-      opacitySpeed: (Math.random() * 0.005 + 0.002) * (Math.random() < 0.5 ? 1 : -1),
+    const makeDot = (startAnywhere = false): Dot => ({
+      x: Math.random() * (canvas.width || 800),
+      y: startAnywhere ? Math.random() * (canvas.height || 100) : -4,
+      size: Math.random() * 1.5 + 0.4,
+      speed: Math.random() * 0.6 + 0.15,
+      opacity: Math.random() * 0.7 + 0.2,
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      shimmer: Math.random(),
-      shimmerSpeed: Math.random() * 0.02 + 0.005,
+      twinkle: Math.random() * Math.PI * 2,
+      twinkleSpeed: Math.random() * 0.04 + 0.01,
     });
 
-    dotsRef.current = Array.from({ length: 120 }, createDot);
+    dotsRef.current = Array.from({ length: 150 }, () => makeDot(true));
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      dotsRef.current.forEach((dot) => {
+      dotsRef.current.forEach((dot, i) => {
         dot.y += dot.speed;
-        dot.shimmer += dot.shimmerSpeed;
+        dot.twinkle += dot.twinkleSpeed;
 
-        const glowOpacity = dot.opacity * (0.6 + 0.4 * Math.sin(dot.shimmer * Math.PI * 2));
+        const alpha = dot.opacity * (0.5 + 0.5 * Math.sin(dot.twinkle));
 
-        if (dot.y > canvas.height) {
-          dot.y = -5;
-          dot.x = Math.random() * canvas.width;
+        if (dot.y > canvas.height + 4) {
+          dotsRef.current[i] = makeDot(false);
+          return;
         }
 
-        dot.opacity += dot.opacitySpeed;
-        if (dot.opacity > 0.95 || dot.opacity < 0.05) {
-          dot.opacitySpeed *= -1;
-        }
-
-        // Draw glowing dot
-        const gradient = ctx.createRadialGradient(
-          dot.x, dot.y, 0,
-          dot.x, dot.y, dot.size * 3
-        );
-        gradient.addColorStop(0, `rgba(${dot.color}, ${glowOpacity})`);
-        gradient.addColorStop(0.4, `rgba(${dot.color}, ${glowOpacity * 0.5})`);
-        gradient.addColorStop(1, `rgba(${dot.color}, 0)`);
-
         ctx.beginPath();
-        ctx.arc(dot.x, dot.y, dot.size * 3, 0, Math.PI * 2);
-        ctx.fillStyle = gradient;
-        ctx.fill();
-
-        // Draw bright core
-        ctx.beginPath();
-        ctx.arc(dot.x, dot.y, dot.size * 0.7, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${glowOpacity * 0.9})`;
+        ctx.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${dot.color}, ${alpha})`;
         ctx.fill();
       });
 
@@ -111,7 +85,6 @@ export function FallingDots() {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 w-full h-full pointer-events-none"
-      style={{ opacity: 0.85 }}
     />
   );
 }
